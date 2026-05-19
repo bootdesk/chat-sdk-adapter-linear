@@ -28,6 +28,9 @@ new LinearAdapter(
 1. `verifyWebhook` — verifies `linear-signature` header HMAC
 2. `parseWebhook` — handles `Issue` create/update with comment; extracts `Comment` payload
 
+## contracts implemented
+- `SupportsEditMessages` / `SupportsDeleteMessages` — edit/delete comments via GraphQL
+
 ## features
 - Post comments on issues (via GraphQL `commentCreate` mutation)
 - Fetch issue info, comments

@@ -89,6 +89,9 @@ Linear sends webhook events to your endpoint. Verify requests using HMAC-SHA256 
 
 Uses the Linear GraphQL API. Bot identity is resolved via the `viewer` query on initialization. Card messages are rendered as Linear-flavored markdown. Edit and delete are not supported for agent sessions.
 
+## Documentationn
+Full API documentation: https://bootdesk.github.io/chat-sdk
+
 ## License
 
 MIT

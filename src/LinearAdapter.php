@@ -8,6 +8,8 @@ use BootDesk\ChatSDK\Core\Chat;
 use BootDesk\ChatSDK\Core\Contracts\Adapter;
 use BootDesk\ChatSDK\Core\Contracts\FileUploadConverter;
 use BootDesk\ChatSDK\Core\Contracts\FormatConverter;
+use BootDesk\ChatSDK\Core\Contracts\SupportsDeleteMessages;
+use BootDesk\ChatSDK\Core\Contracts\SupportsEditMessages;
 use BootDesk\ChatSDK\Core\Exceptions\AdapterException;
 use BootDesk\ChatSDK\Core\Exceptions\AuthenticationException;
 use BootDesk\ChatSDK\Core\FetchOptions;
@@ -23,7 +25,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class LinearAdapter implements Adapter
+class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMessages
 {
     protected ?string $botUserId = null;
 
