@@ -12,11 +12,11 @@ Requires a PSR-18 HTTP client (`guzzlehttp/guzzle`, `symfony/http-client`, etc.)
 
 ## Configuration
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `api_key` | Linear API Key | `lin_api_abc123...` |
-| `http_client` | PSR-18 HTTP client instance | `new GuzzleHttp\Client` |
-| `webhook_secret` | Webhook Secret | `my-secret...` |
+| Variable         | Description                 | Example                 |
+| ---------------- | --------------------------- | ----------------------- |
+| `api_key`        | Linear API Key              | `lin_api_abc123...`     |
+| `http_client`    | PSR-18 HTTP client instance | `new GuzzleHttp\Client` |
+| `webhook_secret` | Webhook Secret              | `my-secret...`          |
 
 ```php
 use BootDesk\ChatSDK\Linear\LinearAdapter;
@@ -54,11 +54,11 @@ $adapter->postMessage('linear:ABC-123:s:session-xyz', 'Agent update.');
 
 ## Thread ID Format
 
-| Format | Description |
-|--------|-------------|
-| `linear:{issueId}` | Bare issue |
-| `linear:{issueId}:c:{commentId}` | Comment thread |
-| `linear:{issueId}:s:{agentSessionId}` | Agent session |
+| Format                                              | Description       |
+| --------------------------------------------------- | ----------------- |
+| `linear:{issueId}`                                  | Bare issue        |
+| `linear:{issueId}:c:{commentId}`                    | Comment thread    |
+| `linear:{issueId}:s:{agentSessionId}`               | Agent session     |
 | `linear:{issueId}:c:{commentId}:s:{agentSessionId}` | Comment + session |
 
 ## Webhook
@@ -71,25 +71,27 @@ Linear sends webhook events to your endpoint. Verify requests using HMAC-SHA256 
 
 ## Feature Matrix
 
-| Feature | Supported |
-|---------|-----------|
-| Post messages | ✓ |
-| Edit messages | ✓ |
-| Delete messages | ✓ |
-| Reactions | ✓ |
-| Typing indicator | ✗ |
-| Fetch messages | ✓ |
-| Fetch thread info | ✓ |
-| Fetch channel info | ✓ |
-| Get user | ✓ |
-| Open DM | ✗ |
-| Stream | ✓ |
+| Feature            | Supported |
+| ------------------ | --------- |
+| Post messages      | ✓         |
+| Edit messages      | ✓         |
+| Delete messages    | ✓         |
+| Reactions          | ✓         |
+| Slash commands     | ✗         |
+| Typing indicator   | ✗         |
+| Fetch messages     | ✓         |
+| Fetch thread info  | ✓         |
+| Fetch channel info | ✓         |
+| Get user           | ✓         |
+| Open DM            | ✗         |
+| Stream             | ✓         |
 
 ## Notes
 
 Uses the Linear GraphQL API. Bot identity is resolved via the `viewer` query on initialization. Card messages are rendered as Linear-flavored markdown. Edit and delete are not supported for agent sessions.
 
 ## Documentationn
+
 Full API documentation: https://bootdesk.github.io/chat-sdk
 
 ## License
