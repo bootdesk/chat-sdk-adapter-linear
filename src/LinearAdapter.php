@@ -17,6 +17,7 @@ use BootDesk\ChatSDK\Core\FetchResult;
 use BootDesk\ChatSDK\Core\Message;
 use BootDesk\ChatSDK\Core\PostableMessage;
 use BootDesk\ChatSDK\Core\SentMessage;
+use BootDesk\ChatSDK\Core\Support\EmojiResolver;
 use BootDesk\ChatSDK\Core\Support\NullFileUploadConverter;
 use BootDesk\ChatSDK\Core\ThreadInfo;
 use BootDesk\ChatSDK\Core\UserInfo;
@@ -35,6 +36,8 @@ class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMess
 
     protected FileUploadConverter $fileUploadConverter;
 
+    protected EmojiResolver $emojiResolver;
+
     public function __construct(
         protected readonly string $apiKey,
         protected readonly ClientInterface $httpClient,
@@ -42,10 +45,12 @@ class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMess
         protected readonly string $apiUrl = 'https://api.linear.app/graphql',
         protected readonly ?Psr17Factory $psrFactory = null,
         ?FileUploadConverter $fileUploadConverter = null,
+        ?EmojiResolver $emojiResolver = null,
     ) {
         $this->formatConverter = new LinearFormatConverter;
         $this->webhookVerifier = new LinearWebhookVerifier($webhookSecret);
         $this->fileUploadConverter = $fileUploadConverter ?? new NullFileUploadConverter;
+        $this->emojiResolver = $emojiResolver ?? EmojiResolver::default();
     }
 
     public function getName(): string
@@ -229,12 +234,14 @@ class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMess
         $this->graphqlMutation(
             'reactionCreate',
             'reactionCreate(input: $input) { reaction { id } }',
-            ['input' => ['commentId' => $messageId, 'emoji' => $emoji]],
+            ['input' => ['commentId' => $messageId, 'emoji' => $this->emojiResolver->toGChat($emoji)]],
         );
     }
 
     public function removeReaction(string $threadId, string $messageId, string $emoji): void
     {
+        $emoji = $this->emojiResolver->toGChat($emoji);
+
         // Requires finding the reaction ID first
         $result = $this->graphqlQuery(
             'commentReactions',
