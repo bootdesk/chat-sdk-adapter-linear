@@ -7,6 +7,7 @@ use BootDesk\ChatSDK\Core\Cards\Card;
 use BootDesk\ChatSDK\Core\Chat;
 use BootDesk\ChatSDK\Core\Exceptions\AdapterException;
 use BootDesk\ChatSDK\Core\Exceptions\AuthenticationException;
+use BootDesk\ChatSDK\Core\Exceptions\UnsupportedOperationException;
 use BootDesk\ChatSDK\Core\PostableMessage;
 use BootDesk\ChatSDK\Linear\LinearAdapter;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -332,7 +333,7 @@ class LinearAdapterTest extends TestCase
 
     public function test_parse_unsupported_event(): void
     {
-        $this->expectException(AdapterException::class);
+        $this->expectException(UnsupportedOperationException::class);
 
         $body = json_encode(['action' => 'update', 'type' => 'Issue']);
         $request = $this->factory->createServerRequest('POST', '/webhook')

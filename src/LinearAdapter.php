@@ -12,6 +12,7 @@ use BootDesk\ChatSDK\Core\Contracts\SupportsDeleteMessages;
 use BootDesk\ChatSDK\Core\Contracts\SupportsEditMessages;
 use BootDesk\ChatSDK\Core\Exceptions\AdapterException;
 use BootDesk\ChatSDK\Core\Exceptions\AuthenticationException;
+use BootDesk\ChatSDK\Core\Exceptions\UnsupportedOperationException;
 use BootDesk\ChatSDK\Core\FetchOptions;
 use BootDesk\ChatSDK\Core\FetchResult;
 use BootDesk\ChatSDK\Core\Message;
@@ -91,7 +92,7 @@ class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMess
             return $this->parseComment($payload, $body);
         }
 
-        throw new AdapterException("Unsupported Linear webhook event: {$type}.{$action}");
+        throw new UnsupportedOperationException("Unsupported Linear webhook event: {$type}.{$action}");
     }
 
     public function encodeThreadId(mixed $platformData): string
