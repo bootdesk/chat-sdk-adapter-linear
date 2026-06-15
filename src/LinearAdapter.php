@@ -6,10 +6,9 @@ use BootDesk\ChatSDK\Core\Author;
 use BootDesk\ChatSDK\Core\ChannelInfo;
 use BootDesk\ChatSDK\Core\Chat;
 use BootDesk\ChatSDK\Core\Contracts\Adapter;
+use BootDesk\ChatSDK\Core\Contracts\CompositeInterfaces\SupportsMessageMutability;
 use BootDesk\ChatSDK\Core\Contracts\FileUploadConverter;
 use BootDesk\ChatSDK\Core\Contracts\FormatConverter;
-use BootDesk\ChatSDK\Core\Contracts\SupportsDeleteMessages;
-use BootDesk\ChatSDK\Core\Contracts\SupportsEditMessages;
 use BootDesk\ChatSDK\Core\Exceptions\AdapterException;
 use BootDesk\ChatSDK\Core\Exceptions\AuthenticationException;
 use BootDesk\ChatSDK\Core\Exceptions\UnsupportedOperationException;
@@ -27,7 +26,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMessages
+class LinearAdapter implements Adapter, SupportsMessageMutability
 {
     protected ?string $botUserId = null;
 
@@ -310,8 +309,24 @@ class LinearAdapter implements Adapter, SupportsDeleteMessages, SupportsEditMess
         return new ThreadInfo(
             id: $threadId,
             channelId: $this->channelIdFromThreadId($threadId),
+            title: $result['title'] ?? null,
             messageCount: $result['commentCount'] ?? 0,
         );
+    }
+
+    public function editThread(string $threadId, ThreadInfo $threadInfo): ThreadInfo
+    {
+        $decoded = $this->decodeThreadId($threadId);
+
+        if ($threadInfo->title !== null) {
+            $this->graphqlMutation(
+                'issueUpdate',
+                'issueUpdate(id: $id, input: $input) { success }',
+                ['id' => $decoded['issueId'], 'input' => ['title' => $threadInfo->title]],
+            );
+        }
+
+        return $this->fetchThread($threadId);
     }
 
     public function fetchChannelInfo(string $channelId): ?ChannelInfo
