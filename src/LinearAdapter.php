@@ -25,6 +25,8 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class LinearAdapter implements Adapter, SupportsMessageMutability
 {
@@ -38,6 +40,8 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
 
     protected EmojiResolver $emojiResolver;
 
+    protected readonly ?LoggerInterface $logger;
+
     public function __construct(
         protected readonly string $apiKey,
         protected readonly ClientInterface $httpClient,
@@ -46,7 +50,9 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
         protected readonly ?Psr17Factory $psrFactory = null,
         ?FileUploadConverter $fileUploadConverter = null,
         ?EmojiResolver $emojiResolver = null,
+        ?LoggerInterface $logger = null,
     ) {
+        $this->logger = $logger ?? new NullLogger;
         $this->formatConverter = new LinearFormatConverter;
         $this->webhookVerifier = new LinearWebhookVerifier($webhookSecret);
         $this->fileUploadConverter = $fileUploadConverter ?? new NullFileUploadConverter;
@@ -81,6 +87,7 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
         $payload = json_decode($body, true);
 
         if ($payload === null || ! isset($payload['action'], $payload['type'])) {
+            $this->logger->error('Invalid Linear webhook payload');
             throw new AdapterException('Invalid Linear webhook payload');
         }
 
@@ -169,6 +176,7 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
         }
 
         $decoded = $this->decodeThreadId($threadId);
+        $this->logger->info('Linear postMessage', ['threadId' => $threadId, 'issueId' => $decoded['issueId']]);
         $body = $this->renderBody($message);
         $body = $this->appendAttachments($body, $message);
 
@@ -509,6 +517,8 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
             ->withHeader('Authorization', $this->apiKey)
             ->withBody($factory->createStream($body));
 
+        $this->logger->debug('Linear GraphQL request', ['url' => $this->apiUrl, 'operation' => $query]);
+
         $psrResponse = $this->httpClient->sendRequest($request);
         $responseBody = (string) $psrResponse->getBody();
         $statusCode = $psrResponse->getStatusCode();
@@ -524,9 +534,11 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
             $extensions = $data['errors'][0]['extensions'] ?? [];
 
             if (in_array($statusCode, [401, 403], true) || ($extensions['code'] ?? '') === 'AUTHENTICATION_ERROR') {
+                $this->logger->error('Linear API authentication error', ['messages' => $messages]);
                 throw new AuthenticationException('Linear API authentication error: '.implode('; ', $messages));
             }
 
+            $this->logger->error('Linear API error', ['messages' => $messages]);
             throw new AdapterException('Linear API error: '.implode('; ', $messages));
         }
 
@@ -546,6 +558,8 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
             'issueId' => $data['issueId'],
             'commentId' => $rootCommentId,
         ]);
+
+        $this->logger->info('Linear comment parsed', ['threadId' => $threadId]);
 
         return new Message(
             id: $data['id'] ?? '',
