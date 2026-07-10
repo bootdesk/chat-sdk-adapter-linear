@@ -559,7 +559,10 @@ class LinearAdapter implements Adapter, SupportsMessageMutability
             'commentId' => $rootCommentId,
         ]);
 
-        $this->logger->info('Linear comment parsed', ['threadId' => $threadId]);
+        $this->logger->info('Linear comment parsed', [
+            'threadId' => $threadId,
+            'body' => mb_substr($rawBody, 0, 500),
+        ]);
 
         return new Message(
             id: $data['id'] ?? '',
